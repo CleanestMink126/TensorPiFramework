@@ -59,15 +59,16 @@ class CNNModel:
 
 
 
-    def optimize(self,num_iterations,saveHelper):
+    def optimize(self,num_iterations,saveHelper,batch_size = None):
         # Ensure we update the global variable rather than a local copy.
 
-
+        if batch_size is None:
+            batch_size= self.batch_size
         # Start-time used for printing time-usage below.
         session = tf.Session()
         session.run(tf.global_variables_initializer())
         start_time = time.time()
-        my_gen = saveHelper.random_batch(self.batch_size)
+        my_gen = saveHelper.random_batch(batch_size)
         print(my_gen)
 
 
@@ -79,8 +80,8 @@ class CNNModel:
             # y_true_batch are the true labels for those images.
             x_batch, y_true_batch,y_one_hot = next(my_gen,(None,None,None))
             while x_batch == None:
-                my_gen = saveHelper.random_batch(self.batch_size)
-                print("Ran Out!")
+                my_gen = saveHelper.random_batch(batch_size)
+                # print("Ran Out!")
                 x_batch, y_true_batch,y_one_hot = next(my_gen,(None,None,None))
 
 
@@ -88,22 +89,22 @@ class CNNModel:
             # for placeholder variables in the TensorFlow graph.
             feed_dict_train = {self.x_image: x_batch,
                                self.y_true: y_one_hot}
-            print("LOOPED")
+            # print("LOOPED")
             # Run the optimizer using this batch of training data.
             # TensorFlow assigns the variables in feed_dict_train
             # to the placeholder variables and then runs the optimizer.
             session.run(self.optimizer, feed_dict=feed_dict_train)
 
             # Print status every 100 iterations.
-            if i % 100 == 0:
+            if i % 10 == 0:
                 # Calculate the accuracy on the training-set.
-                acc = session.run(self.accuracy, feed_dict=feed_dict_train)
-
+                # acc = session.run(self.accuracy, feed_dict=feed_dict_train)
+                self.print_test_accuracy(saveHelper)
                 # Message for printing.
-                msg = "Optimization Iteration: {0:>6}, Training Accuracy: {1:>6.1%}"
+                msg = "Optimization Iteration: {0:>6}"#Training Accuracy: {1:>6.1%}"
 
                 # Print it.
-                print(msg.format(i + 1, acc))
+                print(msg.format(i + 1))
 
         # Update the total number of iterations performed.
         self.total_iterations += num_iterations
@@ -136,27 +137,28 @@ class CNNModel:
         # The starting index for the next batch is denoted i.
         i = 0
 
-        my_gen = saveHelper.test_batch(self.batch_size,"10")
+        # my_gen = saveHelper.test_batch(self.batch_size,"10")
+        my_gen = saveHelper.random_batch(self.batch_size)
 
         while i < num_test:
             # The ending index for the next batch is denoted j.
-            j = min(i + self.batch_size, num_test)
+
 
             images, labels,y_one_hot = next(my_gen,(None,None,None))
-            while images == None:
+            while images is None:
                 my_gen = saveHelper.random_batch(self.batch_size)
-                print("Ran Out!")
+                # print("Ran Out!")
                 images, labels,y_one_hot = next(my_gen,(None,None,None))
 
             # Get the images from the test-set between index i and j.
-
+            j = min(i + self.batch_size, num_test, i + len(labels))
             # Get the associated labels.
 
             # Create a feed-dict with these images and labels.
-            print(j-i)
+            # print(len(images))
             feed_dict = {self.x_image: images[0:j-i],
                          self.y_true: y_one_hot[0:j-i]}
-
+            print(j -i)
             # Calculate the predicted class using TensorFlow.
             cls_pred[i:j] = session.run(self.y_pred_cls, feed_dict=feed_dict)
             cls_true[i:j] = labels[0:j-i]

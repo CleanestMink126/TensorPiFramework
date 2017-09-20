@@ -38,6 +38,7 @@ import os
 from dataset import one_hot_encoded
 import random
 from scipy import misc
+from PIL import Image
 
 
 ########################################################################
@@ -81,7 +82,7 @@ class saverObject:
         # Create full path for the file.
         file_path = self._get_file_path(filename)
 
-        print("Loading data: " + file_path)
+        # print("Loading data: " + file_path)
 
         with open(file_path, mode='rb') as f:
             # In Python 3.X it is important to set the encoding,
@@ -98,7 +99,7 @@ class saverObject:
         where the pixels are floats between 0.0 and 1.0.
         """
         # Convert the raw images from the data-files to floating-points.
-        raw_float = np.array(raw, dtype=float) / 255.0
+        raw_float = np.array(raw, dtype=float)
 
         # Reshape the array to 4-dimensions.
         images = raw_float.reshape([-1,self.img_width,self.img_height,self.channels])
@@ -140,9 +141,26 @@ class saverObject:
 
         return data
 
+    def resize(self, subfolders,size = .5, path = None,offset = 0):
+        if path is None:
+            path = self.origin_folder
+
+
+        for i, v in enumerate(subfolders):
+            files_txt = [path+v + f for f in os.listdir(path+v) if f.endswith('.jpg')]
+            for f in files_txt:
+                im = Image.open(f)
+                print(im.size)
+                im = im.resize((int(im.size[0]*size),int(im.size[1]*size)),Image.ANTIALIAS)
+                im.save(f,optimize=True,quality=100)
+
+
+
+
     def cache_pictures(self, subfolders, path = None,offset = 0):
         if path is None:
             path = self.origin_folder
+
 
         listPaths = []
 
@@ -175,7 +193,7 @@ class saverObject:
                 imageObj = []
                 clsObj = []
 
-        identifier = "data_batch_" + str(int(i/self.numImages + offset + 1))
+        identifier = "data_batch_" + str(int(i/self.numImages + offset))
         self.num_batches = int(len(listPaths)/self.numImages + offset)-1
         print(self.num_batches)
         self._save_data(data=imageObj,classes=clsObj,filename= identifier)
@@ -189,16 +207,17 @@ class saverObject:
         return
     def random_batch(self,batch_size):
         data,classes,one_hot_classes = self._load_data("data_batch_" + str(random.randint(0,self.num_batches))+ ".pkl")
-        print("why god")
+        # print("why god")
         for i in range(0,self.numImages,batch_size):
-            print("running")
+            # print("running")
             j = min(i+batch_size,len(data))
-            yield data[i-batch_size:i],classes[i-batch_size:i],one_hot_classes[i-batch_size:i]
+            yield data[i:j],classes[i:j],one_hot_classes[i:j]
     def test_batch(self,batch_size,testName):
         data,classes,one_hot_classes = self._load_data("data_batch_" + testName+ ".pkl")
         for i in range(0,self.numImages,batch_size):
-            j = min(i+batch_size,len(data))
-            yield data[i-batch_size:j],classes[i-batch_size:j],one_hot_classes[i-batch_size:j]
+            j = min(i+batch_size,len(classes))
+            print(data)
+            yield data[i:j],classes[i:j],one_hot_classes[i:j]
 
 
 
