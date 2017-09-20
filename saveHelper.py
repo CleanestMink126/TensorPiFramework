@@ -37,13 +37,15 @@ import pickle
 import os
 from dataset import one_hot_encoded
 import random
+from scipy import misc
+
 
 ########################################################################
 
 # Directory where you want to download and save the data-set.
 # Set this before you start calling any of the functions below.
 class dataObject:
-    def __init__(traindata, classes):
+    def __init__(self,traindata, classes):
         self.traindata = traindata
         self.classes = classes
 
@@ -58,6 +60,7 @@ class saverObject:
         self.numImages = int(self.maxSize/(self.img_width*self.img_height + 1))
         self.class_names = class_names
         self.num_classes = len(class_names)
+        self.num_batches = 0
     def _get_file_path(self,filename=""):
         """
         Return the full path of a data-file for the data-set.
@@ -121,7 +124,8 @@ class saverObject:
         return images, data.classes, one_hot_encoded(class_numbers=data.classes, num_classes=self.num_classes)
 
     def _save_data(self,data,classes, filename):
-        file_path = self._get_file_path(filename)
+
+        file_path = self._get_file_path(filename) + ".pkl"
         if len(data) == len(classes):
             saveObject = dataObject(traindata=data,classes=classes)
         else:
@@ -136,19 +140,58 @@ class saverObject:
 
         return data
 
-    def cache_pictures(self, subfolders, path = None):
+    def cache_pictures(self, subfolders, path = None,offset = 0):
         if path is None:
             path = self.origin_folder
 
         listPaths = []
 
         for i, v in enumerate(subfolders):
-            files_txt = [path+v + f for f in os.listdir(path+v) if f.endswith('.jpg')]
+            files_txt = [[path+v + f, v]for f in os.listdir(path+v) if f.endswith('.jpg')]
             listPaths = listPaths + files_txt
 
         random.shuffle(listPaths)
         print(listPaths)
+        # imageObj= np.zeros(shape = [self.numImages,self.img_width,self.img_height,self.channels])
+        # clsObj = np.zeros(shape = [self.numImages])
+        imageObj = []
+        clsObj = []
+        for i,v in enumerate(listPaths):
+            rgb = misc.imread(v[0])
+            # rgb = np.array(im.getdata()).reshape((self.img_width, self.img_height, self.channels))
+            # print(rgb)
+            # imageObj[i % self.numImages] = rgb
+            # clsObj[i % self.numImages] = subfolders.index(v[1])
+            imageObj.append(rgb)
+            clsObj.append(subfolders.index(v[1]))
 
+
+            if i % self.numImages == self.numImages-1:
+                identifier = "data_batch_" + str(int(i/self.numImages)+ offset)
+                print(imageObj[1])
+                self._save_data(data=imageObj,classes=clsObj,filename= identifier)
+                # imageObj= np.zeros(shape = [self.numImages,self.img_width,self.img_height,self.channels])
+                # clsObj = np.zeros(shape = [self.numImages])
+                imageObj = []
+                clsObj = []
+
+        identifier = "data_batch_" + str(int(i/self.maxSize + offset + 1))
+        self.num_batches = int(i/self.maxSize + offset + 1)
+        print(imageObj)
+        self._save_data(data=imageObj,classes=clsObj,filename= identifier)
+        imageObj= []
+        clsObj = []
+
+
+    def random_in_batch(self,batch_size):
+        '''I'm gonna wait to implement this but it will return random values
+        inside a batch'''
+        return
+    def random_batch(self,batch_size):
+        data,classes,one_hot_classes = self._load_data("data_batch_" + str(random.randint(0,self.num_batches))+ ".pkl")
+        for i in range(batch_size,self.num_images,batch_size):
+            yield data[i-batch_size:i],classes[i-batch_size:i],one_hot_classes[i-batch_size:i]
+        
 
 
 

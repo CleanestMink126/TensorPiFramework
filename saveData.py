@@ -3,9 +3,10 @@ from inception import transfer_values_cache
 import cifar10,os
 import matplotlib.pyplot as plt
 import time
-import rawpy
 import os
 from scipy import misc
+import numpy as np
+
 
 
 data_path = "data/cheese-10/"
@@ -49,6 +50,7 @@ for i, v in enumerate(mydir):
     files_txt = [f for f in os.listdir(v) if f.endswith('.jpg')]
     for j,infile in enumerate(files_txt):
         rgb = misc.imread(v + infile)
+        rgb = np.array(rgb)
         #print(rgb)
         imageObj.append(rgb)
         clsObj.append(i)

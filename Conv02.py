@@ -281,12 +281,13 @@ class CNNModel:
         return x_batch, y_batch
 
 
-    def optimize(self,num_iterations):
+    def optimize(self,num_iterations,saveHelper):
         # Ensure we update the global variable rather than a local copy.
 
 
         # Start-time used for printing time-usage below.
         start_time = time.time()
+        my_gen = list(saveHelper.random_batch(self.batch_size))
 
         for i in range(self.total_iterations,
                        self.total_iterations + num_iterations):
@@ -294,7 +295,12 @@ class CNNModel:
             # Get a batch of training examples.
             # x_batch now holds a batch of images and
             # y_true_batch are the true labels for those images.
-            x_batch, y_true_batch = data.train.next_batch(self.train_batch_size)
+            x_batch, y_true_batch,y_one_hot = next(my_gen,(None,None,None))
+            while x_batch = None:
+                my_gen = list(saveHelper.random_batch(self.batch_size))
+                print("Ran Out!")
+                x_batch, y_true_batch,y_one_hot = next(my_gen,(None,None,None))
+
 
             # Put the batch into a dict with the proper names
             # for placeholder variables in the TensorFlow graph.
