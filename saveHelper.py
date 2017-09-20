@@ -101,7 +101,7 @@ class saverObject:
         raw_float = np.array(raw, dtype=float) / 255.0
 
         # Reshape the array to 4-dimensions.
-        images = raw_float.reshape([-1,self.img_height,self.img_width,self.channels])
+        images = raw_float.reshape([-1,self.img_width,self.img_height,self.channels])
 
         # Reorder the indices of the array.
         # images = images.transpose([3, 2, 4, 1])
@@ -168,16 +168,16 @@ class saverObject:
 
             if i % self.numImages == self.numImages-1:
                 identifier = "data_batch_" + str(int(i/self.numImages)+ offset)
-                print(imageObj[1])
+                # print(imageObj[1])
                 self._save_data(data=imageObj,classes=clsObj,filename= identifier)
                 # imageObj= np.zeros(shape = [self.numImages,self.img_width,self.img_height,self.channels])
                 # clsObj = np.zeros(shape = [self.numImages])
                 imageObj = []
                 clsObj = []
 
-        identifier = "data_batch_" + str(int(i/self.maxSize + offset + 1))
-        self.num_batches = int(i/self.maxSize + offset + 1)
-        print(imageObj)
+        identifier = "data_batch_" + str(int(i/self.numImages + offset + 1))
+        self.num_batches = int(len(listPaths)/self.numImages + offset)-1
+        print(self.num_batches)
         self._save_data(data=imageObj,classes=clsObj,filename= identifier)
         imageObj= []
         clsObj = []
@@ -189,9 +189,17 @@ class saverObject:
         return
     def random_batch(self,batch_size):
         data,classes,one_hot_classes = self._load_data("data_batch_" + str(random.randint(0,self.num_batches))+ ".pkl")
-        for i in range(batch_size,self.num_images,batch_size):
+        print("why god")
+        for i in range(0,self.numImages,batch_size):
+            print("running")
+            j = min(i+batch_size,len(data))
             yield data[i-batch_size:i],classes[i-batch_size:i],one_hot_classes[i-batch_size:i]
-        
+    def test_batch(self,batch_size,testName):
+        data,classes,one_hot_classes = self._load_data("data_batch_" + testName+ ".pkl")
+        for i in range(0,self.numImages,batch_size):
+            j = min(i+batch_size,len(data))
+            yield data[i-batch_size:j],classes[i-batch_size:j],one_hot_classes[i-batch_size:j]
+
 
 
 
