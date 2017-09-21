@@ -39,6 +39,7 @@ from dataset import one_hot_encoded
 import random
 from scipy import misc
 from PIL import Image
+import matplotlib.pyplot as plt
 
 
 ########################################################################
@@ -99,7 +100,8 @@ class saverObject:
         where the pixels are floats between 0.0 and 1.0.
         """
         # Convert the raw images from the data-files to floating-points.
-        raw_float = np.array(raw, dtype=float)
+        raw_float = np.array(raw)
+        # print(len(raw_float[0]))
 
         # Reshape the array to 4-dimensions.
         images = raw_float.reshape([-1,self.img_width,self.img_height,self.channels])
@@ -120,8 +122,10 @@ class saverObject:
 
         # Load the pickled data-file.
         data = self._unpickle(filename)
-        raw_images = np.array(data.traindata)
-        images = self._convert_images(raw_images)
+        # print(len(data.traindata))
+         # raw_images = np.array(data.traindata)
+        images = self._convert_images(data.traindata)
+
         return images, data.classes, one_hot_encoded(class_numbers=data.classes, num_classes=self.num_classes)
 
     def _save_data(self,data,classes, filename):
@@ -194,7 +198,8 @@ class saverObject:
                 clsObj = []
 
         identifier = "data_batch_" + str(int(i/self.numImages + offset))
-        self.num_batches = int(len(listPaths)/self.numImages + offset)-1
+        self.num_batches = int(len(listPaths)/self.numImages + offset)
+        print(imageObj[1])
         print(self.num_batches)
         self._save_data(data=imageObj,classes=clsObj,filename= identifier)
         imageObj= []
@@ -208,15 +213,17 @@ class saverObject:
     def random_batch(self,batch_size):
         data,classes,one_hot_classes = self._load_data("data_batch_" + str(random.randint(0,self.num_batches))+ ".pkl")
         # print("why god")
-        for i in range(0,self.numImages,batch_size):
+        # print(classes)
+        for i in range(0,len(classes),batch_size):
             # print("running")
-            j = min(i+batch_size,len(data))
+            j = min(i+batch_size,len(classes))
+            print(i)
             yield data[i:j],classes[i:j],one_hot_classes[i:j]
     def test_batch(self,batch_size,testName):
         data,classes,one_hot_classes = self._load_data("data_batch_" + testName+ ".pkl")
         for i in range(0,self.numImages,batch_size):
             j = min(i+batch_size,len(classes))
-            print(data)
+            # print(data)
             yield data[i:j],classes[i:j],one_hot_classes[i:j]
 
 

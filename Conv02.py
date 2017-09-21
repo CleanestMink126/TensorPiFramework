@@ -6,6 +6,7 @@ from sklearn.metrics import confusion_matrix
 import time
 from datetime import timedelta
 import math
+import prettytensor as pt
 # from tensorflow.examples.tutorials.mnist import input_data
 #
 # data = input_data.read_data_sets("data/MNIST/", one_hot=True)
@@ -45,15 +46,16 @@ class CNNModel:
         self.y_true_cls = tf.argmax(self.y_true, dimension=1)
         self.total_iterations = 0
 
-    def set_optimizer(self,last_layer):
-        self.cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=last_layer,
-                                                                labels=self.y_true)
-        self.cost = tf.reduce_mean(self.cross_entropy)
+    def set_optimizer(self,loss,y_pred):
+        # self.cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=last_layer,
+        #                                                         labels=self.y_true)
+        # self.cost = tf.reduce_mean(self.cross_entropy + 1e-6)
 
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(self.cost)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=1e-5).minimize(loss)
 
-        self.y_pred = tf.nn.softmax(last_layer)
-        self.y_pred_cls = tf.argmax(self.y_pred, dimension=1)
+        # self.y_pred = tf.nn.softmax(last_layer)
+        self.loss = loss
+        self.y_pred_cls = tf.argmax(y_pred, dimension=1)
         self.correct_prediction = tf.equal(self.y_pred_cls, self.y_true_cls)
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
 
@@ -79,6 +81,7 @@ class CNNModel:
             # x_batch now holds a batch of images and
             # y_true_batch are the true labels for those images.
             x_batch, y_true_batch,y_one_hot = next(my_gen,(None,None,None))
+            # print(y_true_batch)
             while x_batch == None:
                 my_gen = saveHelper.random_batch(batch_size)
                 # print("Ran Out!")
@@ -94,9 +97,10 @@ class CNNModel:
             # TensorFlow assigns the variables in feed_dict_train
             # to the placeholder variables and then runs the optimizer.
             session.run(self.optimizer, feed_dict=feed_dict_train)
+            print(session.run(self.loss, feed_dict=feed_dict_train))
 
             # Print status every 100 iterations.
-            if i % 10 == 0:
+            if i % 100 == 0:
                 # Calculate the accuracy on the training-set.
                 # acc = session.run(self.accuracy, feed_dict=feed_dict_train)
                 self.print_test_accuracy(saveHelper)
@@ -149,6 +153,10 @@ class CNNModel:
                 my_gen = saveHelper.random_batch(self.batch_size)
                 # print("Ran Out!")
                 images, labels,y_one_hot = next(my_gen,(None,None,None))
+            # print(labels[0])
+            # plt.imshow(images[0].reshape([self.img_width,self.img_height]))
+            # plt.colorbar()
+            # plt.show()
 
             # Get the images from the test-set between index i and j.
             j = min(i + self.batch_size, num_test, i + len(labels))
@@ -162,6 +170,7 @@ class CNNModel:
             # Calculate the predicted class using TensorFlow.
             cls_pred[i:j] = session.run(self.y_pred_cls, feed_dict=feed_dict)
             cls_true[i:j] = labels[0:j-i]
+            print(session.run(self.accuracy, feed_dict=feed_dict))
             # Set the start-index for the next batch to the
             # end-index of the current batch.
             i = j
@@ -170,6 +179,8 @@ class CNNModel:
 
 
         # Create a boolean array whether each image is correctly classified.
+        print(cls_true[0:10])
+        print(cls_pred[0:10])
         correct = (cls_true == cls_pred)
 
         # Calculate the number of correctly classified images.
