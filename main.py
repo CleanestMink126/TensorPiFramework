@@ -1,6 +1,7 @@
 import saveHelper
 
 from Conv02 import *
+import tensorflow as tf
 maxsize = 10000000
 saveObj = saveHelper.saverObject(class_names=["0","1","2","3","4","5","6","7","8","9"],
                                  img_dimensions=[28, 28, 1],
@@ -60,10 +61,10 @@ with pt.defaults_scope(activation_fn=tf.nn.relu):
         fully_connected(size=128, name='layer_fc1').\
         softmax_classifier(num_classes=myModel.num_classes, labels=myModel.y_true)
 
-
+session = tf.Session()
 myModel.set_optimizer(loss,y_pred)
-myModel.optimize(num_iterations=10000,saveHelper=saveObj, batch_size = 64)
-myModel.print_test_accuracy(saveHelper=saveObj)
+myModel.optimize(num_iterations=10000,saveHelper=saveObj, session = session,batch_size = 64)
+myModel.print_test_accuracy(saveHelper=saveObj, session = session)
 
 #
 #     #

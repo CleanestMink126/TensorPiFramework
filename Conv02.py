@@ -61,13 +61,13 @@ class CNNModel:
 
 
 
-    def optimize(self,num_iterations,saveHelper,batch_size = None):
+    def optimize(self,num_iterations,saveHelper,session,batch_size = None):
         # Ensure we update the global variable rather than a local copy.
 
         if batch_size is None:
             batch_size= self.batch_size
         # Start-time used for printing time-usage below.
-        session = tf.Session()
+
         session.run(tf.global_variables_initializer())
         start_time = time.time()
         my_gen = saveHelper.random_batch(batch_size)
@@ -103,7 +103,7 @@ class CNNModel:
             if i % 100 == 0:
                 # Calculate the accuracy on the training-set.
                 # acc = session.run(self.accuracy, feed_dict=feed_dict_train)
-                self.print_test_accuracy(saveHelper)
+                self.print_test_accuracy(saveHelper,session)
                 # Message for printing.
                 msg = "Optimization Iteration: {0:>6}"#Training Accuracy: {1:>6.1%}"
 
@@ -122,12 +122,12 @@ class CNNModel:
         # Print the time-usage.
         print("Time usage: " + str(timedelta(seconds=int(round(time_dif)))))
 
-    def print_test_accuracy(self,saveHelper,show_example_errors=False,
+    def print_test_accuracy(self,saveHelper,session,show_example_errors=False,
                             show_confusion_matrix=False):
-        session = tf.Session()
-        session.run(tf.global_variables_initializer())
+
+        
         # Number of images in the test-set.
-        num_test = self.batch_size
+        num_test = self.batch_size*5
 
         # Allocate an array for the predicted classes which
         # will be calculated in batches and filled into this array.
