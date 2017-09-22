@@ -33,6 +33,7 @@ class CNNModel:
         self.total_iterations = 0
 
     def set_optimizer(self,y_pred,loss = None, optimizer = None):
+        '''The will set the initial parameters such as the optimizer'''
         if optimizer is None:
             if loss is None:
                 raise ValueError("Must have either loss or optimizer")
@@ -48,14 +49,15 @@ class CNNModel:
 
 
     def optimize(self,num_iterations,saveHelper,session,batch_size = None):
-        # Ensure we update the global variable rather than a local copy.
+        '''Optimize  the model'''
 
         if batch_size is None:
             batch_size= self.batch_size
         # Start-time used for printing time-usage below.
 
-        session.run(tf.global_variables_initializer())
+
         start_time = time.time()
+        #get the generator for random batch
         my_gen = saveHelper.random_batch(batch_size)
         print(my_gen)
 
@@ -66,9 +68,10 @@ class CNNModel:
             # Get a batch of training examples.
             # x_batch now holds a batch of images and
             # y_true_batch are the true labels for those images.
+
             x_batch, y_true_batch,y_one_hot = next(my_gen,(None,None,None))
             # print(y_true_batch)
-            while x_batch == None:
+            while x_batch == None:#when the generator is done, instantiate a new one
                 my_gen = saveHelper.random_batch(batch_size)
                 # print("Ran Out!")
                 x_batch, y_true_batch,y_one_hot = next(my_gen,(None,None,None))
@@ -180,80 +183,6 @@ class CNNModel:
         # Print the accuracy.
         msg = "Accuracy on Test-Set: {0:.1%} ({1} / {2})"
         print(msg.format(acc, correct_sum, num_test))
-
-        # # Plot some examples of mis-classifications, if desired.
-        # if show_example_errors:
-        #     print("Example errors:")
-        #     plot_example_errors(cls_pred=cls_pred, correct=correct)
-        #
-        # # Plot the confusion matrix, if desired.
-        # if show_confusion_matrix:
-        #     print("Confusion Matrix:")
-        #     plot_confusion_matrix(cls_pred=cls_pred)
-
-
-
-        '''Lets not do this one right now'''
-    # def plot_example_errors(cls_pred, correct):
-    #     # This function is called from print_test_accuracy() below.
-    #
-    #     # cls_pred is an array of the predicted class-number for
-    #     # all images in the test-set.
-    #
-    #     # correct is a boolean array whether the predicted class
-    #     # is equal to the true class for each image in the test-set.
-    #
-    #     # Negate the boolean array.
-    #     incorrect = (correct == False)
-    #
-    #     # Get the images from the test-set that have been
-    #     # incorrectly classified.
-    #     images = data.test.images[incorrect]
-    #
-    #     # Get the predicted classes for those images.
-    #     cls_pred = cls_pred[incorrect]
-    #
-    #     # Get the true classes for those images.
-    #     cls_true = data.test.cls[incorrect]
-    #
-    #     # Plot the first 9 images.
-    #     plot_images(images=images[0:9],
-    #                 cls_true=cls_true[0:9],
-    #                 cls_pred=cls_pred[0:9])
-
-
-    # def plot_confusion_matrix(cls_pred):
-    #     # This is called from print_test_accuracy() below.
-    #
-    #     # cls_pred is an array of the predicted class-number for
-    #     # all images in the test-set.
-    #
-    #     # Get the true classifications for the test-set.
-    #     cls_true = data.test.cls
-    #
-    #     # Get the confusion matrix using sklearn.
-    #     cm = confusion_matrix(y_true=cls_true,
-    #                           y_pred=cls_pred)
-    #
-    #     # Print the confusion matrix as text.
-    #     print(cm)
-    #
-    #     # Plot the confusion matrix as an image.
-    #     plt.matshow(cm)
-    #
-    #     # Make various adjustments to the plot.
-    #     plt.colorbar()
-    #     tick_marks = np.arange(num_classes)
-    #     plt.xticks(tick_marks, range(num_classes))
-    #     plt.yticks(tick_marks, range(num_classes))
-    #     plt.xlabel('Predicted')
-    #     plt.ylabel('True')
-    #
-    #     # Ensure the plot is shown correctly with multiple plots
-    #     # in a single Notebook cell.
-    #     plt.show()
-    #
-    #     # Split the test-set into smaller batches of this size.
 
 
 
@@ -455,17 +384,3 @@ def new_fc_layer(input,          # The previous layer.
 #     feature_columns = [tf.contrib.layers.real_valued_column("", dimension=self.inputs)]
 #
 #     return training_set,testing_set,feature_columns
-
-
-# Number of neurons in fully-connected layer.
-
-
-# def random_batch():
-#     num_images = len(self.batch_size)
-#
-#     idx = np.random.choice(num_images,size=self.train_batch_size,replace=False)
-#
-#     x_batch = [idx]
-#     y_batch = labels_train[idx]
-#
-#     return x_batch, y_batch

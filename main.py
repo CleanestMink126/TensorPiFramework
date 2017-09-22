@@ -2,7 +2,9 @@ import saveHelper
 
 from Conv02 import *
 import tensorflow as tf
-maxsize = 10000000
+
+maxsize = 10000000 #define max points in workspace
+#then define our helperobject with image dimensions and classes
 saveObj = saveHelper.saverObject(class_names=["0","1","2","3","4","5","6","7","8","9"],
                                  img_dimensions=[28, 28, 1],
                                  from_folder="/home/gsteelman/Desktop/Machine Learning/MNIST/trainingSample/" ,
@@ -10,9 +12,8 @@ saveObj = saveHelper.saverObject(class_names=["0","1","2","3","4","5","6","7","8
                                   maxSize=maxsize)
 #####saveObj.resize(subfolders=["middle/","left/","right/"])
 saveObj.cache_pictures(subfolders=["0/","1/","2/","3/","4/","5/","6/","7/","8/","9/"])
-# saveObj.num_batches=73
-# print(next(saveObj.random_batch(20)))
 
+#add new model
 myModel = CNNModel(saveObj,64)
 filter_size1 = [5,5]          # Convolution filters are 5 x 5 pixels.
 num_filters1 = 16         # There are 16 of these filters.
@@ -23,7 +24,7 @@ num_filters2 = 36         # There are 36 of these filters.
 
 # Fully-connected layer.
 fc_size = 128
-
+#Define our convolutional layers
 x_pretty = pt.wrap(myModel.x_image)
 with pt.defaults_scope(activation_fn=tf.nn.relu):
     y_pred, loss = x_pretty.\
@@ -35,8 +36,11 @@ with pt.defaults_scope(activation_fn=tf.nn.relu):
         fully_connected(size=128, name='layer_fc1').\
         softmax_classifier(num_classes=myModel.num_classes, labels=myModel.y_true)
 
+#Start session and init values
 session = tf.Session()
-myModel.set_optimizer(loss,y_pred)
+session.run(tf.global_variables_initializer())
+myModel.set_optimizer(loss,y_pred)#set optimizer
+#optimize the model for a set iterations
 myModel.optimize(num_iterations=10000,saveHelper=saveObj, session = session,batch_size = 64)
 myModel.print_test_accuracy(saveHelper=saveObj, session = session)
 
