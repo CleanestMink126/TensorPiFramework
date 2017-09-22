@@ -2,62 +2,48 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 from sklearn.metrics import confusion_matrix
-
 import time
 from datetime import timedelta
 import math
 import prettytensor as pt
-# from tensorflow.examples.tutorials.mnist import input_data
-#
-# data = input_data.read_data_sets("data/MNIST/", one_hot=True)
-# print("Size of:")
-# print("- Training-set:\t\t{}".format(len(data.train.labels)))
-# print("- Test-set:\t\t{}".format(len(data.test.labels)))
-# print("- Validation-set:\t{}".format(len(data.validation.labels)))
-#data.test.labels = data.labels
-# data.test.cls = np.argmax(data.test.labels, axis=1)
 
 
 tf.__version__
 
 class CNNModel:
-
-
-    # Number of classes, one class for each of 10 digits.
-
-
-
-    # Number of colour channels for the images: 1 channel for gray-scale.
-
-    # Get the first images from the test-set.
-
+    '''This is the main module for running a Convolutional Neural Network'''
     def __init__(self,saverObject,batch_size):
-        self.batch_size = batch_size
+        '''It is imperitive that a saver object is created and passed in
+        beforehand. This will contain all the information needed to set up
+        the parameters. This is designed so all impormation can be input
+        once and the model will do the rest. This is also designed to be
+        object oriented to creating new models is easier'''
+        self.batch_size = batch_size #number of batches to train on
         self.img_width = saverObject.img_width
         self.img_height = saverObject.img_height
-        self.inputs = self.img_width * self.img_height
+        self.inputs = self.img_width * self.img_height#Size of flattened input
         self.img_shape = (self.img_width, self.img_height)
-        self.maxSize = saverObject.maxSize
+        self.maxSize = saverObject.maxSize#max memory in
         self.num_channels = saverObject.channels
         self.num_classes = saverObject.num_classes
-        self.x = tf.placeholder(tf.float32, shape=[None, self.inputs], name='x')
+        self.x = tf.placeholder(tf.float32, shape=[None, self.inputs], name='x')#instantiate X
         self.x_image = tf.reshape(self.x, [-1, self.img_width, self.img_height, self.num_channels])
         self.y_true = tf.placeholder(tf.float32, shape=[None, self.num_classes], name='y_true')
         self.y_true_cls = tf.argmax(self.y_true, dimension=1)
         self.total_iterations = 0
 
-    def set_optimizer(self,loss,y_pred):
-        # self.cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=last_layer,
-        #                                                         labels=self.y_true)
-        # self.cost = tf.reduce_mean(self.cross_entropy + 1e-6)
-
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=1e-5).minimize(loss)
-
-        # self.y_pred = tf.nn.softmax(last_layer)
-        self.loss = loss
+    def set_optimizer(self,y_pred,loss = None, optimizer = None):
+        if optimizer is None:
+            if loss is None:
+                raise ValueError("Must have either loss or optimizer")
+            else:
+                self.loss = loss
+                self.optimizer = tf.train.AdamOptimizer(learning_rate=1e-5).minimize(loss)
+        else:
+            self.optimizer = optimizer
         self.y_pred_cls = tf.argmax(y_pred, dimension=1)
         self.correct_prediction = tf.equal(self.y_pred_cls, self.y_true_cls)
-        self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
+        self.accuracy = t f.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
 
 
 
@@ -125,7 +111,7 @@ class CNNModel:
     def print_test_accuracy(self,saveHelper,session,show_example_errors=False,
                             show_confusion_matrix=False):
 
-        
+
         # Number of images in the test-set.
         num_test = self.batch_size*5
 

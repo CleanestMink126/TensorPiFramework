@@ -24,32 +24,6 @@ num_filters2 = 36         # There are 36 of these filters.
 # Fully-connected layer.
 fc_size = 128
 
-#
-# layer_conv1, weights_conv1 = \
-#     new_conv_layer(input=myModel.x_image,
-#                    num_input_channels=myModel.num_channels,
-#                    filter_size=filter_size1,
-#                    num_filters=num_filters1,
-#                    use_pooling=True)
-#
-#
-# layer_conv2, weights_conv2 = \
-#     new_conv_layer(input=layer_conv1,
-#                    num_input_channels=num_filters1,
-#                    filter_size=filter_size2,
-#                    num_filters=num_filters2,
-#                    use_pooling=True)
-#
-# layer_flat, num_features = flatten_layer(layer_conv2)
-#
-# layer_fc1 = new_fc_layer(input=layer_flat,
-#                          num_inputs=num_features,
-#                          num_outputs=fc_size,
-#                          use_relu=True)
-# layer_fc2 = new_fc_layer(input=layer_fc1,
-#                          num_inputs=fc_size,
-#                          num_outputs=myModel.num_classes,
-#                          use_relu=False)
 x_pretty = pt.wrap(myModel.x_image)
 with pt.defaults_scope(activation_fn=tf.nn.relu):
     y_pred, loss = x_pretty.\

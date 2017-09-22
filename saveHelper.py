@@ -1,28 +1,12 @@
 ########################################################################
 #
-# Functions for downloading the CIFAR-10 data-set from the internet
-# and loading it into memory.
 #
-# Implemented in Python 3.5
+# Implemented in Python 3.6
 #
-# Usage:
-# 1) Set the variable data_path with the desired storage path.
-# 2) Call maybe_download_and_extract() to download the data-set
-#    if it is not already located in the given data_path.
-# 3) Call load_class_names() to get an array of the class-names.
-# 4) Call load_training_data() and load_test_data() to get
-#    the images, class-numbers and one-hot encoded class-labels
-#    for the training-set and test-set.
-# 5) Use the returned data in your own program.
-#
-# Format:
-# The images for the training- and test-sets are returned as 4-dim numpy
-# arrays each with the shape: [image_number, height, width, channel]
-# where the individual pixels are floats between 0.0 and 1.0.
 #
 ########################################################################
 #
-# This file is part of the TensorFlow Tutorials available at:
+# This file originates from  part of the TensorFlow Tutorials available at:
 #
 # https://github.com/Hvass-Labs/TensorFlow-Tutorials
 #
@@ -47,19 +31,21 @@ import matplotlib.pyplot as plt
 # Directory where you want to download and save the data-set.
 # Set this before you start calling any of the functions below.
 class dataObject:
+    '''This is a simple data containter so the data can be pickled with its values'''
     def __init__(self,traindata, classes):
         self.traindata = traindata
         self.classes = classes
 
 class saverObject:
+    '''This object handles all the saving and caching done in the model'''
     def __init__(self,maxSize, to_folder, from_folder,img_dimensions,class_names):
-        self.batches_folder = to_folder
-        self.origin_folder = from_folder
-        self.maxSize = maxSize
+        self.batches_folder = to_folder#Where to cache data
+        self.origin_folder = from_folder#where to read pictures from
+        self.maxSize = maxSize#maximum amount of data in workspace at a time
         self.img_width = img_dimensions[0]
         self.img_height = img_dimensions[1]
         self.channels = img_dimensions[2]
-        self.numImages = int(self.maxSize/(self.img_width*self.img_height + 1))
+        self.numImages = int(self.maxSize/(self.img_width*self.img_height + 1))#calculates the number of images so that max size applied
         self.class_names = class_names
         self.num_classes = len(class_names)
         self.num_batches = 0
@@ -115,7 +101,7 @@ class saverObject:
 
     def _load_data(self,filename):
         """
-        Load a pickled data-file from the CIFAR-10 data-set
+        Load a pickled data-file from the data-set
         and return the converted images (see above) and the class-number
         for each image.
         """
@@ -145,7 +131,8 @@ class saverObject:
 
         return data
 
-    def resize(self, subfolders,size = .5, path = None,offset = 0):
+    def resize(self, subfolders,targetSize = [30,20], path = None,offset = 0):
+        '''This will resize the images in the desired subfolders to the targetSize'''
         if path is None:
             path = self.origin_folder
 
@@ -155,17 +142,19 @@ class saverObject:
             for f in files_txt:
                 im = Image.open(f)
                 print(im.size)
-                im = im.resize((int(im.size[0]*size),int(im.size[1]*size)),Image.ANTIALIAS)
+                im = im.resize(targetSize,Image.ANTIALIAS)
                 im.save(f,optimize=True,quality=100)
 
 
 
 
     def cache_pictures(self, subfolders, path = None,offset = 0):
+        '''This function will take all the subfolders, iterate through the
+        pictures in them, randomize the pictures while keeping track of the
+        subfolders, and cache the pictures in appropriatly sized pickle
+        folders in the ToFolder'''
         if path is None:
             path = self.origin_folder
-
-
         listPaths = []
 
         for i, v in enumerate(subfolders):
@@ -211,6 +200,8 @@ class saverObject:
         inside a batch'''
         return
     def random_batch(self,batch_size):
+        '''This will continually return batches of the desired batch size
+        from a random cache. Does not work as well if there are minimal chaches'''
         data,classes,one_hot_classes = self._load_data("data_batch_" + str(random.randint(0,self.num_batches))+ ".pkl")
         # print("why god")
         # print(classes)
@@ -220,6 +211,7 @@ class saverObject:
             print(i)
             yield data[i:j],classes[i:j],one_hot_classes[i:j]
     def test_batch(self,batch_size,testName):
+        '''Return batches from the desired cache name'''
         data,classes,one_hot_classes = self._load_data("data_batch_" + testName+ ".pkl")
         for i in range(0,self.numImages,batch_size):
             j = min(i+batch_size,len(classes))
