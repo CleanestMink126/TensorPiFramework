@@ -1,7 +1,5 @@
-import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
-from sklearn.metrics import confusion_matrix
 import time
 from datetime import timedelta
 import math
@@ -39,26 +37,30 @@ class CNNModel:
                 raise ValueError("Must have either loss or optimizer")
             else:
                 self.loss = loss
-                self.optimizer = tf.train.AdamOptimizer(learning_rate=1e-5).minimize(loss)
+                self.optimizer = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)
         else:
             self.optimizer = optimizer
         self.y_pred_cls = tf.argmax(y_pred, dimension=1)
         self.correct_prediction = tf.equal(self.y_pred_cls, self.y_true_cls)
-        self.accuracy = t f.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
+        self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
 
 
 
     def optimize(self,num_iterations,saveHelper,session,batch_size = None):
         '''Optimize  the model'''
+        # session.run(tf.global_variables_initializer())
 
         if batch_size is None:
             batch_size= self.batch_size
         # Start-time used for printing time-usage below.
+        track_acc = [0.0]*10
+
 
 
         start_time = time.time()
         #get the generator for random batch
         my_gen = saveHelper.random_batch(batch_size)
+
         print(my_gen)
 
 
@@ -92,7 +94,12 @@ class CNNModel:
             if i % 100 == 0:
                 # Calculate the accuracy on the training-set.
                 # acc = session.run(self.accuracy, feed_dict=feed_dict_train)
-                self.print_test_accuracy(saveHelper,session)
+                acc = self.print_test_accuracy(saveHelper,session)
+                if acc < np.mean(track_acc):
+                    break
+                track_acc.pop(0)
+                track_acc.append(acc)
+
                 # Message for printing.
                 msg = "Optimization Iteration: {0:>6}"#Training Accuracy: {1:>6.1%}"
 
@@ -111,12 +118,11 @@ class CNNModel:
         # Print the time-usage.
         print("Time usage: " + str(timedelta(seconds=int(round(time_dif)))))
 
-    def print_test_accuracy(self,saveHelper,session,show_example_errors=False,
-                            show_confusion_matrix=False):
+    def print_test_accuracy(self,saveHelper,session):
 
-
+        start_time = time.time()
         # Number of images in the test-set.
-        num_test = self.batch_size*5
+        num_test = self.batch_size
 
         # Allocate an array for the predicted classes which
         # will be calculated in batches and filled into this array.
@@ -131,7 +137,7 @@ class CNNModel:
         i = 0
 
         # my_gen = saveHelper.test_batch(self.batch_size,"10")
-        my_gen = saveHelper.random_batch(self.batch_size)
+        my_gen = saveHelper.random_test_batch(self.batch_size)
 
         while i < num_test:
             # The ending index for the next batch is denoted j.
@@ -139,7 +145,7 @@ class CNNModel:
 
             images, labels,y_one_hot = next(my_gen,(None,None,None))
             while images is None:
-                my_gen = saveHelper.random_batch(self.batch_size)
+                my_gen = saveHelper.random_test_batch(self.batch_size)
                 # print("Ran Out!")
                 images, labels,y_one_hot = next(my_gen,(None,None,None))
             # print(labels[0])
@@ -183,7 +189,42 @@ class CNNModel:
         # Print the accuracy.
         msg = "Accuracy on Test-Set: {0:.1%} ({1} / {2})"
         print(msg.format(acc, correct_sum, num_test))
+        end_time = time.time()
+        return acc
 
+
+    def return_answers(self,data,session):
+        # Number of images in the test-set.
+        num_test = len(data)
+
+        # Allocate an array for the predicted classes which
+        # will be calculated in batches and filled into this array.
+        cls_pred = np.zeros(shape=num_test, dtype=np.int)
+        cls_true = np.zeros(shape=num_test, dtype=np.int)
+
+        # Now calculate the predicted classes for the batches.
+        # We will just iterate through all the batches.
+        # There might be a more clever and Pythonic way of doing this.
+
+        # The starting index for the next batch is denoted i.
+
+        while i < num_test:
+
+            # Get the images from the test-set between index i and j.
+
+            # Get the associated labels.
+
+            # Create a feed-dict with these images and labels.
+            # print(len(images))
+            feed_dict = {self.x_image: data}
+            # Calculate the predicted class using TensorFlow.
+            cls_pred = session.run(self.y_pred_cls, feed_dict=feed_dict)
+            # Set the start-index for the next batch to the
+            # end-index of the current batch.
+            i = j
+
+        # Convenience variable for the true class-numbers of the test-set.
+        return cls_pred
 
 
 
@@ -371,16 +412,16 @@ def new_fc_layer(input,          # The previous layer.
 
     return layer
 
- # def load_data_csv(self,trainName,testName):
-#
-#     training_set = tf.contrib.learn.datasets.base.load_csv_with_header(
-#         filename=trainName,
-#         target_dtype=np.int,
-#         features_dtype=np.int)
-#     testing_set = tf.contrib.learn.datasets.base.load_csv_with_header(
-#         filename=testName,
-#         target_dtype=np.int,
-#         features_dtype=np.int)
-#     feature_columns = [tf.contrib.layers.real_valued_column("", dimension=self.inputs)]
-#
-#     return training_set,testing_set,feature_columns
+ # def load_data_csv(self,trainName,testName,inputs):
+ #
+ #    training_set = tf.contrib.learn.datasets.base.load_csv_with_header(
+ #        filename=trainName,
+ #        target_dtype=np.int,
+ #        features_dtype=np.int)
+ #    testing_set = tf.contrib.learn.datasets.base.load_csv_with_header(
+ #        filename=testName,
+ #        target_dtype=np.int,
+ #        features_dtype=np.int)
+ #    feature_columns = [tf.contrib.layers.real_valued_column("", dimension=inputs)]
+ #
+ #    return training_set,testing_set,feature_columns
