@@ -3,6 +3,7 @@ import saveHelper
 from Conv02 import *
 import tensorflow as tf
 import os
+from PIL import Image
 
 maxsize = 10000000 #define max points in workspace
 #then define our helperobject with image dimensions and classes
@@ -14,8 +15,8 @@ saveObj = saveHelper.saverObject(class_names=["middle","left","right"],
 # saveObj.resize(subfolders=["middle/","left/","right/"])
 # saveObj.togray(subfolders=["middle/","left/","right/"],)
 #
-# saveObj.cache_pictures(subfolders=["middle/","left/","right/"])
-# saveObj.cache_test_pictures(subfolders=["middle/","left/","right/"], path = "/home/gsteelman/Desktop/ML/Pictures/test/")
+# saveObj.cache_pictures(subfolders=["left/","middle/","right/"])
+# saveObj.cache_test_pictures(subfolders=["left/","middle/","right/"], path = "/home/gsteelman/Desktop/ML/Pictures/test/")
 #add new model
 myModel = CNNModel(saveObj,80)
 filter_size1 = [5,5]          # Convolution filters are 5 x 5 pixels.
@@ -53,13 +54,22 @@ session.run(tf.global_variables_initializer())
 #
 
 #optimize the model for a set iterations
-myModel.optimize(num_iterations=10000,saveHelper=saveObj, session = session,batch_size = 64,numTest = 8)
-myModel.print_test_accuracy(saveHelper=saveObj, session = session)
+# myModel.optimize(num_iterations=10000,saveHelper=saveObj, session = session,batch_size = 64,numTest = 8)
+# my_gen = saveObj.random_batch(1)
+# for i in range(100):
+#     next(my_gen,(None,None,None))
+# data,dclass,_ = next(my_gen,(None,None,None))
+# data = np.squeeze(data)
+# im = Image.fromarray(data)
+# print(dclass)
+# im.show()
 #
-saver = tf.train.Saver()
-save_dir = 'checkpoints/'
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-save_path = os.path.join(save_dir, 'best_validation')
-saver.save(sess=session, save_path=save_path)
+# myModel.print_test_accuracy(saveHelper=saveObj, session = session)
+# #
+# saver = tf.train.Saver()
+# save_dir = 'checkpoints/'
+# if not os.path.exists(save_dir):
+#     os.makedirs(save_dir)
+# save_path = os.path.join(save_dir, 'best_validation')
+# saver.save(sess=session, save_path=save_path)
 #     #

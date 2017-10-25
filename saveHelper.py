@@ -90,7 +90,7 @@ class saverObject:
         # Convert the raw images from the data-files to floating-points.
         raw_float = np.array(raw)
         # Reshape the array to 4-dimensions.
-        images = raw_float.reshape([-1,self.img_width,self.img_height,self.channels])
+        images = raw_float.reshape([-1,self.img_height,self.img_width,self.channels])
         return images
 
     def _load_data(self,filename):

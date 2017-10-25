@@ -20,12 +20,12 @@ class CNNModel:
         self.img_width = saverObject.img_width
         self.img_height = saverObject.img_height
         self.inputs = self.img_width * self.img_height#Size of flattened input
-        self.img_shape = (self.img_width, self.img_height)
+        self.img_shape = (self.img_height,self.img_width,)
         self.maxSize = saverObject.maxSize#max memory in
         self.num_channels = saverObject.channels
         self.num_classes = saverObject.num_classes
         self.x = tf.placeholder(tf.float32, shape=[None, self.inputs], name='x')#instantiate X
-        self.x_image = tf.reshape(self.x, [-1, self.img_width, self.img_height, self.num_channels])
+        self.x_image = tf.reshape(self.x, [-1,  self.img_height, self.img_width,self.num_channels])
         self.y_true = tf.placeholder(tf.float32, shape=[None, self.num_classes], name='y_true')
         self.y_true_cls = tf.argmax(self.y_true, dimension=1)
         self.total_iterations = 0
@@ -61,7 +61,7 @@ class CNNModel:
         #get the generator for random batch
         my_gen = saveHelper.random_batch(batch_size)
 
-        print(my_gen)
+        # print(my_gen)
 
 
         for i in range(self.total_iterations,
@@ -208,20 +208,12 @@ class CNNModel:
 
         # The starting index for the next batch is denoted i.
 
-        while i < num_test:
 
-            # Get the images from the test-set between index i and j.
-
-            # Get the associated labels.
-
-            # Create a feed-dict with these images and labels.
-            # print(len(images))
-            feed_dict = {self.x_image: data}
-            # Calculate the predicted class using TensorFlow.
-            cls_pred = session.run(self.y_pred_cls, feed_dict=feed_dict)
-            # Set the start-index for the next batch to the
-            # end-index of the current batch.
-            i = j
+        feed_dict = {self.x_image: data}
+        # Calculate the predicted class using TensorFlow.
+        cls_pred = session.run(self.y_pred_cls, feed_dict=feed_dict)
+        # Set the start-index for the next batch to the
+        # end-index of the current batch.
 
         # Convenience variable for the true class-numbers of the test-set.
         return cls_pred
