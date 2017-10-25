@@ -8,7 +8,7 @@ savePictureBool = False
 lastTime = time.time()
 timeToNextPicture = .5
 cap = cv2.VideoCapture(1)
-fileFolder = "right/"
+fileFolder = "left/"
 
 if not cap:
     ans = cap.open()

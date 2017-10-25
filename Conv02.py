@@ -46,14 +46,14 @@ class CNNModel:
 
 
 
-    def optimize(self,num_iterations,saveHelper,session,batch_size = None):
+    def optimize(self,num_iterations,saveHelper,session,batch_size = None,numTest = 100):
         '''Optimize  the model'''
         # session.run(tf.global_variables_initializer())
 
         if batch_size is None:
             batch_size= self.batch_size
         # Start-time used for printing time-usage below.
-        track_acc = [0.0]*10
+        track_acc = [0.0]*5
 
 
 
@@ -73,7 +73,7 @@ class CNNModel:
 
             x_batch, y_true_batch,y_one_hot = next(my_gen,(None,None,None))
             # print(y_true_batch)
-            while x_batch == None:#when the generator is done, instantiate a new one
+            while x_batch is None:#when the generator is done, instantiate a new one
                 my_gen = saveHelper.random_batch(batch_size)
                 # print("Ran Out!")
                 x_batch, y_true_batch,y_one_hot = next(my_gen,(None,None,None))
@@ -91,7 +91,7 @@ class CNNModel:
             print(session.run(self.loss, feed_dict=feed_dict_train))
 
             # Print status every 100 iterations.
-            if i % 100 == 0:
+            if i % numTest == 0:
                 # Calculate the accuracy on the training-set.
                 # acc = session.run(self.accuracy, feed_dict=feed_dict_train)
                 acc = self.print_test_accuracy(saveHelper,session)

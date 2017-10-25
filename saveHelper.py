@@ -15,7 +15,8 @@
 # Copyright 2016 by Magnus Erik Hvass Pedersen
 #
 ########################################################################
-
+import sys
+sys.path.insert(0, '/home/gsteelman/Desktop/ML/TensorPiFramework/OldInception/')
 import numpy as np
 import pickle
 import os
