@@ -16,10 +16,11 @@
 #
 ########################################################################
 import sys
-sys.path.insert(0, '/home/gsteelman/Desktop/ML/TensorPiFramework/OldInception/')
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'OldInception/')))
 import numpy as np
 import pickle
-import os
+
 from dataset import one_hot_encoded
 import random
 from scipy import misc
