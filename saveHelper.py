@@ -23,9 +23,7 @@ import pickle
 
 from dataset import one_hot_encoded
 import random
-from scipy import misc
-from PIL import Image
-import matplotlib.pyplot as plt
+import cv2
 
 
 ########################################################################
@@ -127,10 +125,9 @@ class saverObject:
         for i, v in enumerate(subfolders):
             files_txt = [path+v + f for f in os.listdir(path+v) if f.endswith('.jpg')]
             for f in files_txt:
-                im = Image.open(f)
-                print(im.size)
-                im = im.resize(targetSize,Image.ANTIALIAS)
-                im.save(f,optimize=True,quality=100)
+                im = cv2.imread(f)
+                im = cv2.resize(image, targetSize)
+                cv2.imwrite( f, im, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
     def togray(self, subfolders, path = None,offset = 0):
         '''This will resize the images in the desired subfolders to the targetSize'''
@@ -139,9 +136,9 @@ class saverObject:
         for i, v in enumerate(subfolders):
             files_txt = [path+v + f for f in os.listdir(path+v) if f.endswith('.jpg')]
             for f in files_txt:
-                im = Image.open(f)
-                im = im.convert('L')
-                im.save(f,optimize=True,quality=100)
+                im = cv2.imread(f)
+                cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                cv2.imwrite( f, im, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
         self.channels = 1
 
 
@@ -161,7 +158,7 @@ class saverObject:
         imageObj = []
         clsObj = []
         for i,v in enumerate(listPaths):
-            rgb = misc.imread(v[0])
+            rgb = cv2.imread(v[0])
             # rgb = np.array(im.getdata()).reshape((self.img_width, self.img_height, self.channels))
             # print(rgb)
             # imageObj[i % self.numImages] = rgb
@@ -207,7 +204,7 @@ class saverObject:
         imageObj = []
         clsObj = []
         for i,v in enumerate(listPaths):
-            rgb = misc.imread(v[0])
+            rgb = cv2.imread(v[0])
             # rgb = np.array(im.getdata()).reshape((self.img_width, self.img_height, self.channels))
             # print(rgb)
             # imageObj[i % self.numImages] = rgb

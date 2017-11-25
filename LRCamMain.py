@@ -3,7 +3,6 @@ import saveHelper
 from Conv02 import *
 import tensorflow as tf
 import os
-from PIL import Image
 
 maxsize = 10000000 #define max points in workspace
 #then define our helperobject with image dimensions and classes

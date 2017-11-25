@@ -3,8 +3,7 @@ import saveHelper
 from Conv02 import *
 import tensorflow as tf
 import os
-from PIL import Image
-import v4l2capture
+import cv2
 import select
 import numpy as np
 from io import StringIO
