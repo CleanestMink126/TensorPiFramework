@@ -16,6 +16,7 @@ class CNNModel:
         the parameters. This is designed so all impormation can be input
         once and the model will do the rest. This is also designed to be
         object oriented to creating new models is easier'''
+        self.saverObject  = saverObject
         self.batch_size = batch_size #number of batches to train on
         self.img_width = saverObject.img_width
         self.img_height = saverObject.img_height

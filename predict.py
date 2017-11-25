@@ -56,42 +56,28 @@ def init_model():
 
 
 def run_answers(myModel,session):
-    video = v4l2capture.Video_device("/dev/video0")
-    size_x, size_y = video.set_format(30, 20)
-    print ("device chose {0}x{1} res".format(size_x, size_y))
-    video.create_buffers(30)
+    cap = cv2.VideoCapture(0)
+    print cap.get(3)
+    print cap.get(4)
 
-    # Send the buffer to the device. Some devices require this to be done
-    # before calling 'start'.
-    video.queue_all_buffers()
+    while(True):
+        # Capture frame-by-frame
+        ret, frame = cap.read()
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        im = cv2.resize(gray, (30,20))
+        im2 = myModel.saverObject._convert_images(im)
 
-    # Start the device. This lights the LED if it's a camera that has one.
-    print("start capture")
-    video.start()
-    while True:
-        select.select((video,), (), ())
 
-                # The rest is easy :-)
-        image_data = video.read_and_queue()
-        imgDecode = np.frombuffer(image_data, dtype=np.uint8)
-        # imgDecode = np.reshape(imgDecode, (-1,3))
-        imgDecode = np.reshape(imgDecode, (size_y,size_x,3))
-        im = Image.fromarray(imgDecode)
-        im = im.resize((30,20),Image.ANTIALIAS)
-        im = im.convert('L')
-        im.show()
-        im  =np.expand_dims(np.asarray(im), axis = 2)
-        im  =np.expand_dims(im, axis = 0)
-        # im.show()
-        break
-        # print(im,'-------------')
-        # imgDecode = StringIO(imgDecode)
-        # im = Image.open(imgDecode)
 
-        # print(imgDecode)
-        # im = Image.fromarray(imgDecode)
-        # im.show()
-        print(myModel.return_answers(im,session))
+
+        # Our operations on the frame come here
+        if ret:
+            # Display the resulting frame
+            cv2.imshow('frame',im)
+            # myModel.return_answers(im,session)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        print myModel.return_answers(im2,session)
 
 if __name__ =="__main__":
     myModel, session = init_model()
