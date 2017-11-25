@@ -21,7 +21,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..
 import numpy as np
 import pickle
 
-from dataset import one_hot_encoded
 import random
 import cv2
 
@@ -38,6 +37,8 @@ class dataObject:
 
 class saverObject:
     '''This object handles all the saving and caching done in the model'''
+    num_batches = 0
+    num_test_batches = 0
     def __init__(self,maxSize, to_folder, from_folder,img_dimensions,class_names):
         self.batches_folder = to_folder#Where to cache data
         self.origin_folder = from_folder#where to read pictures from
@@ -48,8 +49,10 @@ class saverObject:
         self.numImages = int(self.maxSize/(self.img_width*self.img_height + 1))#calculates the number of images so that max size applied
         self.class_names = class_names
         self.num_classes = len(class_names)
-        self.num_batches = 0
-        self.num_test_batches = 0
+        if self.channels == 1:
+            self.imgType = cv2.IMREAD_GRAYSCALE
+        else:
+            self.imgType = cv2.IMREAD_COLOR
     def _get_file_path(self,filename=""):
         """
         Return the full path of a data-file for the data-set.
@@ -75,7 +78,7 @@ class saverObject:
         with open(file_path, mode='rb') as f:
             # In Python 3.X it is important to set the encoding,
             # otherwise an exception is raised here.
-            data = pickle.load(f, encoding='bytes')
+            data = pickle.load(f)
 
         return data
 
@@ -111,7 +114,7 @@ class saverObject:
         else:
             print("NOT SAME SIZE")
             return
-        print("Saving data: " + file_path)
+        # print("Saving data: " + file_path)
         with open(file_path, mode='wb') as f:
             # In Python 3.X it is important to set the encoding,
             # otherwise an exception is raised here.
@@ -152,13 +155,13 @@ class saverObject:
             listPaths = listPaths + files_txt
 
         random.shuffle(listPaths)
-        print(listPaths)
+        # print(listPaths)
         # imageObj= np.zeros(shape = [self.numImages,self.img_width,self.img_height,self.channels])
         # clsObj = np.zeros(shape = [self.numImages])
         imageObj = []
         clsObj = []
         for i,v in enumerate(listPaths):
-            rgb = cv2.imread(v[0])
+            rgb = cv2.imread(v[0],self.imgType)
             # rgb = np.array(im.getdata()).reshape((self.img_width, self.img_height, self.channels))
             # print(rgb)
             # imageObj[i % self.numImages] = rgb
@@ -178,7 +181,7 @@ class saverObject:
 
         identifier = "test_batch_" + str(int(i/self.numImages + offset))
         self.num_test_batches = int(len(listPaths)/self.numImages + offset)
-        print(imageObj[1])
+        # print(imageObj[1])
         print(self.num_batches)
         self._save_data(data=imageObj,classes=clsObj,filename= identifier)
         imageObj= []
@@ -198,13 +201,13 @@ class saverObject:
             listPaths = listPaths + files_txt
 
         random.shuffle(listPaths)
-        print(listPaths)
+        # print(listPaths)
         # imageObj= np.zeros(shape = [self.numImages,self.img_width,self.img_height,self.channels])
         # clsObj = np.zeros(shape = [self.numImages])
         imageObj = []
         clsObj = []
         for i,v in enumerate(listPaths):
-            rgb = cv2.imread(v[0])
+            rgb = cv2.imread(v[0],self.imgType)
             # rgb = np.array(im.getdata()).reshape((self.img_width, self.img_height, self.channels))
             # print(rgb)
             # imageObj[i % self.numImages] = rgb
@@ -224,7 +227,7 @@ class saverObject:
 
         identifier = "data_batch_" + str(int(i/self.numImages + offset))
         self.num_batches = int(len(listPaths)/self.numImages + offset)
-        print(imageObj[1])
+        # print(imageObj[1])
         print(self.num_batches)
         self._save_data(data=imageObj,classes=clsObj,filename= identifier)
         imageObj= []
@@ -261,3 +264,27 @@ class saverObject:
 
 
 ########################################################################
+def one_hot_encoded(class_numbers, num_classes=None):
+    """
+    Generate the One-Hot encoded class-labels from an array of integers.
+
+    For example, if class_number=2 and num_classes=4 then
+    the one-hot encoded label is the float array: [0. 0. 1. 0.]
+
+    :param class_numbers:
+        Array of integers with class-numbers.
+        Assume the integers are from zero to num_classes-1 inclusive.
+
+    :param num_classes:
+        Number of classes. If None then use max(class_numbers)+1.
+
+    :return:
+        2-dim array of shape: [len(class_numbers), num_classes]
+    """
+
+    # Find the number of classes if None is provided.
+    # Assumes the lowest class-number is zero.
+    if num_classes is None:
+        num_classes = np.max(class_numbers) + 1
+
+    return np.eye(num_classes, dtype=float)[class_numbers]

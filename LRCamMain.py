@@ -3,6 +3,7 @@ import saveHelper
 from Conv02 import *
 import tensorflow as tf
 import os
+import cv2
 
 maxsize = 10000000 #define max points in workspace
 #then define our helperobject with image dimensions and classes
@@ -50,25 +51,27 @@ session.run(tf.global_variables_initializer())
 #     os.makedirs(save_dir)
 # save_path = os.path.join(save_dir, 'best_validation')
 # saver.restore(sess=session, save_path=save_path)
-#
+
 
 #optimize the model for a set iterations
-# myModel.optimize(num_iterations=10000,saveHelper=saveObj, session = session,batch_size = 64,numTest = 8)
-# my_gen = saveObj.random_batch(1)
-# for i in range(100):
-#     next(my_gen,(None,None,None))
-# data,dclass,_ = next(my_gen,(None,None,None))
-# data = np.squeeze(data)
-# im = Image.fromarray(data)
-# print(dclass)
-# im.show()
+myModel.optimize(num_iterations=10000,saveHelper=saveObj, session = session,batch_size = 64,numTest = 50)
+my_gen = saveObj.random_batch(1)
+for i in range(100):
+    next(my_gen,(None,None,None))
+data,dclass,_ = next(my_gen,(None,None,None))
+data = np.squeeze(data)
+print(dclass)
+while 1:
+    cv2.imshow('Image', data)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 #
 # myModel.print_test_accuracy(saveHelper=saveObj, session = session)
 # #
-# saver = tf.train.Saver()
-# save_dir = 'checkpoints/'
-# if not os.path.exists(save_dir):
-#     os.makedirs(save_dir)
-# save_path = os.path.join(save_dir, 'best_validation')
-# saver.save(sess=session, save_path=save_path)
+saver = tf.train.Saver()
+save_dir = 'checkpoints/'
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
+save_path = os.path.join(save_dir, 'best_validation')
+saver.save(sess=session, save_path=save_path)
 #     #
