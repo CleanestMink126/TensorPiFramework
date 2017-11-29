@@ -73,11 +73,11 @@ def run_answers(myModel,session):
         # Our operations on the frame come here
         if ret:
             # Display the resulting frame
-            cv2.imshow('frame',im)
+            #cv2.imshow('frame',im)
             # myModel.return_answers(im,session)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-        print myModel.return_answers(im2,session)
+            #if cv2.waitKey(1) & 0xFF == ord('q'):
+            #    break
+            print myModel.return_answers(im2,session)
 
 if __name__ =="__main__":
     myModel, session = init_model()
