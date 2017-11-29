@@ -7,6 +7,7 @@ import cv2
 import select
 import numpy as np
 from io import StringIO
+import moveServo
 
 
 def init_model():
@@ -59,6 +60,8 @@ def run_answers(myModel,session):
     cap = cv2.VideoCapture(0)
     print cap.get(3)
     print cap.get(4)
+    angle = 90
+    direction = 3
 
     while(True):
         # Capture frame-by-frame
@@ -67,9 +70,6 @@ def run_answers(myModel,session):
         im = cv2.resize(gray, (30,20))
         im2 = myModel.saverObject._convert_images(im)
 
-
-
-
         # Our operations on the frame come here
         if ret:
             # Display the resulting frame
@@ -77,7 +77,14 @@ def run_answers(myModel,session):
             # myModel.return_answers(im,session)
             #if cv2.waitKey(1) & 0xFF == ord('q'):
             #    break
-            print myModel.return_answers(im2,session)
+            ans =  myModel.return_answers(im2,session)
+            if ans == 1 and angle < 180:
+                angle += direction
+                moveServo.SetAngle(angle)
+            elif ans == 2 and angle > 0:
+                angle -= direction
+                moveServo.SetAngle(angle)
+
 
 if __name__ =="__main__":
     myModel, session = init_model()
